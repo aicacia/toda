@@ -1,0 +1,33 @@
+{
+	"name": "@toda/monorepo",
+	"private": true,
+	"version": "0.0.0",
+	"description": "monorepo for @toda",
+	"type": "module",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/toda/toda"
+	},
+	"scripts": {
+		"test": "pnpm test -r --filter=./packages/* --workspace-concurrency=1",
+		"check": "pnpm -r prepublishOnly && pnpm -r check",
+		"lint": "pnpm -r lint && eslint --cache --cache-location node_modules/.eslintcache 'packages/**/*.js'",
+		"format": "pnpm -r format",
+		"precommit": "pnpm format && pnpm lint",
+		"build": "pnpm --filter @toda/* -r build",
+		"start": "pnpm --filter @toda/application -r desktop"
+	},
+	"devDependencies": {
+		"@sveltejs/eslint-config": "^8.1.0",
+		"@svitejs/changesets-changelog-github-compact": "^1.2.0",
+		"eslint": "^9.17.0",
+		"playwright": "^1.49.1",
+		"prettier": "^3.4.2",
+		"prettier-plugin-svelte": "^3.3.2",
+		"typescript-eslint": "^8.18.0"
+	},
+	"packageManager": "pnpm@9.15.0",
+	"engines": {
+		"pnpm": "9"
+	}
+}

@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schema.tauri.app/config/2",
+	"productName": "toda",
+	"version": "0.1.0",
+	"identifier": "com.toda",
+	"build": {
+		"beforeBuildCommand": "PUBLIC_TODO_URL=https://aicacia.github.io/toda NODE_ENV=production npm run build",
+		"beforeDevCommand": "npm run start",
+		"devUrl": "http://localhost:5173",
+		"frontendDist": "../build"
+	},
+	"app": {
+		"windows": [
+			{
+				"title": "Toda",
+				"width": 800,
+				"height": 600
+			}
+		],
+		"security": {
+			"csp": {
+				"default-src": "'self' ipc: http://ipc.localhost",
+				"img-src": "'self' asset: http://asset.localhost",
+				"frame-src": "'self' asset: http://asset.localhost"
+			},
+			"assetProtocol": {
+				"enable": true,
+				"scope": {
+					"allow": ["$HOME/.toda", "$HOME/.toda/**", "$HOME/.toda/**/*"],
+					"requireLiteralLeadingDot": false
+				}
+			}
+		}
+	},
+	"bundle": {
+		"active": true,
+		"targets": "all",
+		"icon": [
+			"icons/32x32.png",
+			"icons/128x128.png",
+			"icons/128x128@2x.png",
+			"icons/icon.icns",
+			"icons/icon.ico"
+		]
+	},
+	"plugins": {
+		"fs": {
+			"requireLiteralLeadingDot": false
+		}
+	}
+}

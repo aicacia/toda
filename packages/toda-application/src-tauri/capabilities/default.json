@@ -1,0 +1,20 @@
+{
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default",
+	"description": "Capability for the main window",
+	"windows": ["main"],
+	"permissions": [
+		{
+			"identifier": "fs:scope-home-recursive",
+			"requireLiteralLeadingDot": false,
+			"allow": [
+				{ "path": "$HOME/.toda" },
+				{ "path": "$HOME/.toda/**" },
+				{ "path": "$HOME/.toda/**/*" }
+			]
+		},
+		"core:default",
+		"core:window:allow-close",
+		"fs:default"
+	]
+}
