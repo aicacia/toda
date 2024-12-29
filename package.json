@@ -21,7 +21,6 @@
 		"@sveltejs/eslint-config": "^8.1.0",
 		"@svitejs/changesets-changelog-github-compact": "^1.2.0",
 		"eslint": "^9.17.0",
-		"playwright": "^1.49.1",
 		"prettier": "^3.4.2",
 		"prettier-plugin-svelte": "^3.3.2",
 		"typescript-eslint": "^8.18.0"

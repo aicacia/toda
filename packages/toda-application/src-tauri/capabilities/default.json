@@ -15,6 +15,7 @@
 		},
 		"core:default",
 		"core:window:allow-close",
-		"fs:default"
+		"fs:default",
+		"hypergraphsql:default"
 	]
 }

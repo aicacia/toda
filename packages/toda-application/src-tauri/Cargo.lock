@@ -843,6 +843,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "expiringmap"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0e78e7e8e4096f86dbf0d9098e7222ee251664edb46183ab5d43e847130cf3f"
+
+[[package]]
 name = "fastrand"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1495,10 +1501,9 @@ dependencies = [
 [[package]]
 name = "hypergraphsql"
 version = "0.1.0"
-source = "git+https://github.com/aicacia/rs-hypergraphsql?rev=d11a39e#d11a39e07ce27d3c2a6d1e063803bcfaf4e2614d"
+source = "git+http://github.com/aicacia/rs-hypergraphsql.git?rev=856f92a#856f92adb5239573b7334e4b1ba100c07326cd48"
 dependencies = [
  "chrono",
- "log",
  "serde",
  "serde_json",
  "sqlx",
@@ -3940,6 +3945,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "tauri-plugin-hypergraphsql"
+version = "0.1.0"
+source = "git+https://github.com/aicacia/tauri-plugin-hypergraphsql?rev=4126607#412660708bce2bd175dce607ecc9e20161e5d7f2"
+dependencies = [
+ "expiringmap",
+ "hypergraphsql",
+ "lazy_static",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin",
+]
+
+[[package]]
 name = "tauri-runtime"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4161,7 +4182,6 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 name = "toda"
 version = "0.1.0"
 dependencies = [
- "hypergraphsql",
  "lazy_static",
  "serde",
  "serde_json",
@@ -4169,6 +4189,7 @@ dependencies = [
  "tauri",
  "tauri-build",
  "tauri-plugin-fs",
+ "tauri-plugin-hypergraphsql",
 ]
 
 [[package]]
@@ -4183,7 +4204,19 @@ dependencies = [
  "mio",
  "pin-project-lite",
  "socket2",
+ "tokio-macros",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "tokio-macros"
+version = "2.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "693d596312e88961bc67d7f1f97af8a70227d9f90c31bba5806eec004978d752"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.90",
 ]
 
 [[package]]
