@@ -15,7 +15,7 @@ export function createNotification(
 	type: NotificationType = 'error',
 	deleteAfterMS = 5000
 ) {
-	const id = unsafeId('notification');
+	const id = unsafeId();
 	notifications.push({
 		id,
 		message,

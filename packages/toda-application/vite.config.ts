@@ -3,6 +3,7 @@ import { defineConfig, mergeConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { networkInterfaces } from 'node:os';
 import { readFile } from 'node:fs/promises';
+import { paraglide } from '@inlang/paraglide-sveltekit/vite';
 
 export default defineConfig(async (configEnv) => {
 	const isProd = configEnv.mode === 'production';
@@ -18,13 +19,19 @@ export default defineConfig(async (configEnv) => {
 	};
 
 	if (!isProd) {
-		if (process.env.PUBLIC_TODO_URL) {
-			define.__DEV_TODO_URL__ = JSON.stringify(setUrlHost(process.env.PUBLIC_TODO_URL, host));
+		if (process.env.PUBLIC_TODA_URL) {
+			define.__DEV_TODA_URL__ = JSON.stringify(setUrlHost(process.env.PUBLIC_TODA_URL, host));
 		}
 	}
 
 	return mergeConfig(configEnv, {
-		plugins: [sveltekit()],
+		plugins: [
+			paraglide({
+				project: './project.inlang',
+				outdir: './src/lib/paraglide'
+			}),
+			sveltekit()
+		],
 		server: {
 			host: '0.0.0.0',
 			port: 5173,

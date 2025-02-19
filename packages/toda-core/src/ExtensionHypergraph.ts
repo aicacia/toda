@@ -1,11 +1,12 @@
 import { join, homeDir } from '@tauri-apps/api/path';
 import {
-	Edge,
-	Node,
-	NodeEdge,
-	Query,
+	type Edge,
+	type Node,
+	type NodeEdge,
+	type Query,
+	type QueryExpr,
+	type QueryKind,
 	query,
-	QueryKind,
 	createNode,
 	updateNode,
 	deleteNode,
@@ -26,8 +27,8 @@ export class ExtensionHypergraph {
 		this.#context = context;
 	}
 
-	uri(uri: string) {
-		return `${this.#context.id}/${uri}`;
+	uri = (uri: string) => {
+		return `${this.#context.name}/${uri}`;
 	}
 
 	async filename() {
@@ -37,13 +38,14 @@ export class ExtensionHypergraph {
 
 	query<FN = object, TN = object, E = object>(
 		kind: 'node_edge',
-		query: Query
+		query: Query,
+		prefixUri?: boolean,
 	): Promise<Array<NodeEdge<FN, TN, E>>>;
-	query<N = object>(kind: 'node', query: Query): Promise<Array<Node<N>>>;
-	query<E = object>(kind: 'edge', query: Query): Promise<Array<Edge<E>>>;
+	query<N = object>(kind: 'node', query: Query, prefixUri?: boolean): Promise<Array<Node<N>>>;
+	query<E = object>(kind: 'edge', query: Query, prefixUri?: boolean): Promise<Array<Edge<E>>>;
 
-	async query(kind: QueryKind, rawQuery: Query) {
-		return query(await this.filename(), kind as never, rawQuery) as never;
+	async query(kind: QueryKind, rawQuery: Query, prefixUri = true) {
+		return query(await this.filename(), kind as never, prefixUri ? prefixQuery(rawQuery, this.uri) : rawQuery) as never;
 	}
 
 	async createNode<T>(uri: string, data: T, prefixUri = true) {
@@ -97,4 +99,42 @@ export class ExtensionHypergraph {
 	async deleteEdgesByURI(uri: string, prefixUri = true) {
 		return deleteEdgesByURI(await this.filename(), prefixUri ? this.uri(uri) : uri);
 	}
+}
+
+function prefixQuery(query: Query, prefixFn: (uri: string) => string): Query {
+	const prefixedQuery: Query = {};
+	for (const [key, value] of Object.entries(query)) {
+		switch (key) {
+			case "node.uri":
+			case "edge.uri":
+				prefixedQuery[key] = prefixQueryRecur(value, prefixFn);
+				break;
+			default:
+				(prefixedQuery as any)[key] = value;
+				break;
+		}
+	}
+	return prefixedQuery;
+}
+
+function prefixQueryRecur(query: QueryExpr, prefixFn: (uri: string) => string): QueryExpr {
+	if (query !== null && typeof query === 'object') {
+		const prefixedQuery: QueryExpr = {};
+		for (const [key, value] of Object.entries(query)) {
+			switch (key) {
+				case 'in':
+				case 'and':
+				case 'or':
+					prefixedQuery[key] = value.map((v: QueryExpr) => prefixQueryRecur(v, prefixFn));
+					break;
+				default:
+					(prefixedQuery as any)[key] = prefixQueryRecur(value, prefixFn);
+					break;
+			}
+		}
+		return prefixedQuery;
+	} else if (typeof query === 'string') {
+		return prefixFn(query);
+	}
+	return query;
 }

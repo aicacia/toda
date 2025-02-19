@@ -19,4 +19,8 @@
 	});
 </script>
 
-<div bind:this={element} title={context.id} class="h-full w-full overflow-hidden"></div>
+<div
+	bind:this={element}
+	title="{context.name}@{context.version}: {context.description}"
+	class="h-full w-full overflow-hidden"
+></div>

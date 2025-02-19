@@ -1,5 +1,6 @@
 <script lang="ts" module>
-	import type { Snippet } from 'svelte';
+	import type { PaneProps } from './Pane.svelte';
+	import Pane from './Pane.svelte';
 
 	export type SplitPaneDirection = 'vertical' | 'horizontal';
 
@@ -8,8 +9,8 @@
 		value?: number;
 		width?: number;
 		height?: number;
-		first: Snippet;
-		second: Snippet;
+		first: PaneProps;
+		second: PaneProps;
 	}
 </script>
 
@@ -99,7 +100,7 @@
 				? `${firstHeight}px`
 				: 'inherit'};"
 		>
-			{@render first()}
+			<Pane {...first} />
 		</div>
 	</div>
 	<div class="flex grow flex-col" class:w-full={horizontal} class:h-full={vertical}>
@@ -109,7 +110,7 @@
 				? `${secondHeight}px`
 				: 'inherit'};"
 		>
-			{@render second()}
+			<Pane {...second} />
 		</div>
 	</div>
 	<div

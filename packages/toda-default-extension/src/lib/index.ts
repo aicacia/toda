@@ -3,7 +3,7 @@ import DefaultComponent from '$lib/components/Default.svelte';
 import { mount, unmount } from 'svelte';
 
 export default async function defaultExtension(context: ExtensionContext) {
-	console.log(`Extension ${context.id} activated`);
+	console.log(`Extension ${context.name}@${context.version} activated`);
 
 	context.onMount(async (target) => {
 		const result = await context.hypergraph.query('node_edge', {
@@ -18,6 +18,6 @@ export default async function defaultExtension(context: ExtensionContext) {
 	});
 
 	context.subscriptions.push(() => {
-		console.log(`Extension ${context.id} deactivated`);
+		console.log(`Extension ${context.name}@${context.version} deactivated`);
 	});
 }

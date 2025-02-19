@@ -5,15 +5,17 @@ declare global {
 
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			paraglide: ParaglideLocals<AvailableLanguageTag>;
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
 	}
 
-	declare const __DEV_TODO_URL__: string | undefined;
+	declare const __DEV_TODA_URL__: string | undefined;
 	declare const __TAURI_INTERNALS__: TauriAPI;
 	declare const __VERSION__: string;
 }
 
-export {};
+export { };

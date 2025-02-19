@@ -55,7 +55,7 @@
 		"process": "0",
 		"rollup": "4",
 		"rollup-plugin-esm-import-to-url": "2",
-		"tauri-plugin-hypergraphsql": "https://github.com/aicacia/tauri-plugin-hypergraphsql.git#4126607",
+		"tauri-plugin-hypergraphsql": "https://github.com/aicacia/tauri-plugin-hypergraphsql.git#32a18df",
 		"tap-nyc": "1",
 		"tap-spec": "5",
 		"tape": "5",

@@ -1,0 +1,11 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"app_title": "Toda",
+	"menu_file": "File",
+	"menu_file_exit": "Exit",
+	"pane_empty": "Empty",
+	"pane_extension_placeholder": "Select an Extension",
+	"pane_contextmanu_split_vertically": "Split vertically",
+	"pane_contextmanu_split_horizontally": "Split horizontally",
+	"locales_en": "English"
+}

@@ -1,5 +1,6 @@
 import { base } from '$app/paths';
 import { json } from '@sveltejs/kit';
+import packageJSON from '../../../package.json';
 
 export const prerender = true;
 
@@ -7,8 +8,8 @@ export async function GET() {
 	return json({
 		name: 'Toda',
 		short_name: 'Toda',
-		description: 'Toda: The Everything Application',
-		version: '1.0',
+		description: `Toda: ${packageJSON.description}`,
+		version: packageJSON.version,
 		manifest_version: 3,
 		icons: [
 			{

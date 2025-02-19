@@ -3,8 +3,8 @@ import { ExtensionCommands } from './ExtensionCommands';
 import { ExtensionHypergraph } from './ExtensionHypergraph';
 
 export interface ExtensionConfig {
-	readonly id: string;
 	readonly name: string;
+	readonly description: string;
 	readonly version: string;
 }
 
@@ -27,8 +27,16 @@ export class ExtensionContext {
 		this.#mount = mount;
 	}
 
-	get id() {
-		return this.config.id;
+	get name() {
+		return this.config.name;
+	}
+
+	get version() {
+		return this.config.version;
+	}
+
+	get description() {
+		return this.config.description;
 	}
 
 	get mount() {

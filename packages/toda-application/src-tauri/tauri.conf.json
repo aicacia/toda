@@ -4,7 +4,7 @@
 	"version": "0.1.0",
 	"identifier": "com.toda",
 	"build": {
-		"beforeBuildCommand": "PUBLIC_TODO_URL=https://aicacia.github.io/toda NODE_ENV=production npm run build",
+		"beforeBuildCommand": "PUBLIC_TODA_URL=https://aicacia.github.io/toda NODE_ENV=production npm run build",
 		"beforeDevCommand": "npm run start",
 		"devUrl": "http://localhost:5173",
 		"frontendDist": "../build"
@@ -26,7 +26,11 @@
 			"assetProtocol": {
 				"enable": true,
 				"scope": {
-					"allow": ["$HOME/.toda", "$HOME/.toda/**", "$HOME/.toda/**/*"],
+					"allow": [
+						"$HOME/.toda",
+						"$HOME/.toda/**",
+						"$HOME/.toda/**/*"
+					],
 					"requireLiteralLeadingDot": false
 				}
 			}

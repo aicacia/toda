@@ -13,4 +13,8 @@ export class ExtensionCommands {
 	get(name: string) {
 		return this.#commands.get(name);
 	}
+
+	has(name: string) {
+		return this.#commands.has(name);
+	}
 }
