@@ -1,8 +1,9 @@
+import type { AvailableLanguageTag } from '$lib/paraglide/runtime';
+import type { ParaglideLocals } from '@inlang/paraglide-sveltekit';
+
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
 declare global {
-	import * as TauriAPI from '@tauri-apps/api';
-
 	namespace App {
 		// interface Error {}
 		interface Locals {
@@ -13,9 +14,9 @@ declare global {
 		// interface Platform {}
 	}
 
-	declare const __DEV_TODA_URL__: string | undefined;
-	declare const __TAURI_INTERNALS__: TauriAPI;
 	declare const __VERSION__: string;
+	declare const __DEV_AUTH_API_URL__: string | undefined;
+	declare const __DEV_AUTH_URL__: string | undefined;
 }
 
 export { };

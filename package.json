@@ -18,12 +18,12 @@
 		"start": "pnpm --filter @toda/application -r desktop"
 	},
 	"devDependencies": {
-		"@sveltejs/eslint-config": "^8.1.0",
+		"@sveltejs/eslint-config": "^8.2.0",
 		"@svitejs/changesets-changelog-github-compact": "^1.2.0",
-		"eslint": "^9.17.0",
-		"prettier": "^3.4.2",
-		"prettier-plugin-svelte": "^3.3.2",
-		"typescript-eslint": "^8.18.0"
+		"eslint": "^9.28.0",
+		"prettier": "^3.5.3",
+		"prettier-plugin-svelte": "^3.4.0",
+		"typescript-eslint": "^8.33.1"
 	},
 	"engines": {
 		"pnpm": "10"

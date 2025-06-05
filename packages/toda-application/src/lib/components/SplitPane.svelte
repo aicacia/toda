@@ -1,27 +1,31 @@
 <script lang="ts" module>
 	import type { PaneProps } from './Pane.svelte';
 	import Pane from './Pane.svelte';
+	import { noop } from '$lib/util';
 
 	export type SplitPaneDirection = 'vertical' | 'horizontal';
 
 	export interface SplitPaneProps {
+		id: string;
 		direction?: SplitPaneDirection;
 		value?: number;
 		width?: number;
 		height?: number;
 		first: PaneProps;
 		second: PaneProps;
+		onchange?(value: number): void;
 	}
 </script>
 
 <script lang="ts">
 	let {
 		direction = $bindable('vertical'),
-		value = $bindable(0.5),
+		value = $bindable(0),
 		width = $bindable(0),
 		height = $bindable(0),
 		first,
-		second
+		second,
+		onchange = noop
 	}: SplitPaneProps = $props();
 
 	let vertical = $state(direction === 'vertical');
@@ -30,31 +34,18 @@
 		vertical = direction === 'vertical';
 		horizontal = direction === 'horizontal';
 	});
-
 	let size = $derived(direction === 'vertical' ? width : height);
+	let firstSize = $state(0);
+	let secondSize = $state(0);
 
-	let firstWidth = $state(0);
-	let firstHeight = $state(0);
-	let secondWidth = $state(0);
-	let secondHeight = $state(0);
-
-	let prevValue = $state(0);
-	let prevSize = $state(0);
 	$effect(() => {
-		value = Math.max(0, Math.min(value, 1.0));
-		prevValue = value;
-		prevSize = size;
-		if (vertical) {
-			firstWidth = size * value;
-			firstHeight = 0;
-			secondWidth = size - firstWidth;
-			secondHeight = 0;
-		} else {
-			firstWidth = 0;
-			firstHeight = size * value;
-			secondWidth = 0;
-			secondHeight = size - firstHeight;
+		if (size === 0) {
+			return;
 		}
+		value = Math.max(0, Math.min(value, size));
+		firstSize = value;
+		secondSize = size - firstSize;
+		onchange(value);
 	});
 
 	let element: HTMLElement;
@@ -68,7 +59,7 @@
 	function onMouseMove(e: MouseEvent) {
 		if (mousedown) {
 			const boundingRect = element.getBoundingClientRect();
-			value = (vertical ? e.clientX - boundingRect.left : e.clientY - boundingRect.top) / size;
+			value = vertical ? e.clientX - boundingRect.left : e.clientY - boundingRect.top;
 		}
 	}
 	function onMouseUp(_e: MouseEvent) {
@@ -96,8 +87,8 @@
 	<div class="flex grow flex-col" class:w-full={horizontal} class:h-full={vertical}>
 		<div
 			class="flex grow flex-col overflow-auto"
-			style="width:{firstWidth > 0 ? `${firstWidth}px` : 'inherit'};height:{firstHeight > 0
-				? `${firstHeight}px`
+			style="width:{vertical ? `${firstSize}px` : 'inherit'};height:{horizontal
+				? `${firstSize}px`
 				: 'inherit'};"
 		>
 			<Pane {...first} />
@@ -106,8 +97,8 @@
 	<div class="flex grow flex-col" class:w-full={horizontal} class:h-full={vertical}>
 		<div
 			class="flex grow flex-col overflow-auto"
-			style="width:{secondWidth > 0 ? `${secondWidth}px` : 'inherit'};height:{secondHeight > 0
-				? `${secondHeight}px`
+			style="width:{vertical ? `${secondSize}px` : 'inherit'};height:{horizontal
+				? `${secondSize}px`
 				: 'inherit'};"
 		>
 			<Pane {...second} />
@@ -123,8 +114,8 @@
 		class:min-h-[1px]={horizontal}
 		class:cursor-col-resize={vertical}
 		class:cursor-row-resize={horizontal}
-		style="left:{firstWidth > 0 ? `${firstWidth - 6}px` : 'inherit'};top:{firstHeight > 0
-			? `${firstHeight - 6}px`
+		style="left:{vertical ? `${firstSize - 6}px` : 'inherit'};top:{horizontal
+			? `${firstSize - 6}px`
 			: 'inherit'}"
 		onmousedown={onMouseDown}
 		role="gridcell"

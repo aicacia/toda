@@ -14,6 +14,6 @@
 	let { Component, props, id }: PaneProps<T> = $props();
 </script>
 
-<div class="pane flex flex-grow flex-col" data-pane-id={id}>
+<div class="pane relative flex flex-grow flex-col" data-pane-id={id}>
 	<Component {...props} />
 </div>

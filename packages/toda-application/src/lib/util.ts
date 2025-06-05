@@ -23,3 +23,5 @@ export function getOrigin() {
 	}
 	return env.PUBLIC_TODA_URL;
 }
+
+export function noop() { }

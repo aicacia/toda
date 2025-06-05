@@ -1,20 +1,46 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import "tailwindcss";
 
 @layer base {
 	* {
 		min-width: 0;
+		min-height: 0;
 	}
 
-	.border,
-	.border-r,
-	.border-l,
-	.border-t,
-	.border-b,
-	.border-x,
-	.border-y {
-			@apply dark:border-gray-600;
+	* {
+		scrollbar-width: thin;
+	}
+	*::-webkit-scrollbar {
+		width: 8px;
+	}
+
+	*::-webkit-scrollbar-track {
+		margin-top: 2px;
+		margin-bottom: 2px;
+		border-radius: 4px;
+	}
+	*::-webkit-scrollbar-thumb {
+		border-radius: 4px;
+	}
+	.dark *::-webkit-scrollbar-track {
+		background: var(--colors-gray-700);
+	}
+
+	* {
+		scrollbar-color: var(--colors-gray-300) var(--colors-white);
+	}
+	.dark * {
+		scrollbar-color: var(--colors-gray-700) var(--colors-gray-900);
+	}
+	*::-webkit-scrollbar-track {
+		background: var(--colors-gray-300);
+	}
+	*::-webkit-scrollbar-thumb {
+		background-color: var(--colors-white);
+		border: 1px solid var(--colors-gray-200);
+	}
+	.dark *::-webkit-scrollbar-thumb {
+		background-color: var(--colors-gray-900);
+		border: 1px solid var(--colors-gray-600);
 	}
 
 	html,
@@ -22,7 +48,7 @@
 		@apply relative flex h-full w-full flex-col overflow-hidden bg-gray-50 text-gray-950 dark:bg-gray-900 dark:text-white;
 	}
 	input,
-	[as='input'],
+	[role='textbox'],
 	select,
 	textarea {
 		@apply rounded-lg border border-gray-600 bg-gray-50 px-3 py-1 text-base text-gray-950 placeholder-gray-600 outline-none focus:outline-none dark:bg-gray-900 dark:text-white;
@@ -38,7 +64,7 @@
 		@apply pe-4;
 	}
 	input[disabled],
-	[as='input'][disabled],
+	[role='textbox'][disabled],
 	select[disabled],
 	textarea[disabled] {
 		@apply cursor-not-allowed opacity-50;
@@ -51,28 +77,32 @@
 	}
 
 	input.invalid,
-	[as='input'].invalid,
+	[role='textbox'].invalid,
 	select.invalid,
 	textarea.invalid {
 		@apply border-red-600 placeholder-red-600;
 	}
 	input.valid,
-	[as='input'].valid,
+	[role='textbox'].valid,
 	select.valid,
 	textarea.valid {
 		@apply border-green-600 placeholder-green-600;
 	}
 	input.warning,
-	[as='input'].warning,
+	[role='textbox'].warning,
 	select.warning,
 	textarea.warning {
 		@apply border-orange-600 placeholder-orange-600;
 	}
 	input.untested,
-	[as='input'].untested,
+	[role='textbox'].untested,
 	select.untested,
 	textarea.untested {
 		@apply border-gray-600 placeholder-gray-600;
+	}
+
+	hr {
+		@apply mb-2 border border-gray-600;
 	}
 
 	h1 {
@@ -122,7 +152,7 @@
 
 @layer components {
 	.btn {
-		@apply cursor-pointer rounded-lg border-none px-3 py-1 text-center text-base font-bold no-underline outline-none transition-all duration-150 ease-linear focus:outline-none;
+		@apply cursor-pointer rounded-lg border border-gray-600 px-3 py-1 text-center text-base font-bold no-underline outline-none transition-all duration-150 ease-linear focus:outline-none;
 	}
 	.btn[disabled] {
 		@apply cursor-not-allowed opacity-50;
@@ -181,6 +211,9 @@
 	.btn.sm {
 		@apply rounded text-xs;
 	}
+	.btn.lg {
+		@apply text-xl;
+	}
 	.btn.icon {
 		@apply min-w-fit p-1;
 	}
@@ -205,10 +238,7 @@
 		@apply border-gray-900 bg-black text-white dark:bg-white dark:!text-gray-950;
 	}
 	.badge.green {
-		@apply border-green-500 bg-green-300 text-green--950;
-	}
-	.badge.winter-hazel {
-		@apply border-winter-hazel-500 bg-winter-hazel-300 text-winter-hazel-950;
+		@apply border-green-500 bg-green-300 text-green-950;
 	}
 	.badge.dark {
 		@apply border-gray-800 bg-gray-950 text-gray-100;

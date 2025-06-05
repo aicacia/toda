@@ -25,8 +25,10 @@
 			Component: SplitPane,
 			props: {
 				direction: pane.direction,
-				width: pane.width,
-				height: pane.height,
+				value: pane.value,
+				onchange(value: number) {
+					updateValue(id, value);
+				},
 				first: buildLayout(layout, pane.first),
 				second: buildLayout(layout, pane.second)
 			}
@@ -39,6 +41,7 @@
 		getOrCreateCurrentLayout,
 		splitCurrentLayout,
 		updateExtension,
+		updateValue,
 		type Layout
 	} from '$lib/stores/layouts.svelte';
 	import EmptyPane from './EmptyPane.svelte';
@@ -52,10 +55,6 @@
 	let currentLayout = $state(getOrCreateCurrentLayout());
 	let layout = $derived(buildLayout(currentLayout));
 
-	$effect(() => {
-		currentLayout = getOrCreateCurrentLayout();
-	});
-
 	let element: HTMLElement;
 	let contextMenuOpen = $state(false);
 	let contextMenuAnchor: HTMLElement | undefined = $state();
@@ -63,6 +62,8 @@
 	let y = $state(0);
 	let splitX = $state(0);
 	let splitY = $state(0);
+	let splitW = $state(0);
+	let splitH = $state(0);
 	let id = $state<string | undefined>();
 
 	function onContextMenu(e: MouseEvent) {
@@ -76,6 +77,8 @@
 		const paneBundingRect = pane.getBoundingClientRect();
 		splitX = x - paneBundingRect.left;
 		splitY = y - paneBundingRect.top;
+		splitW = paneBundingRect.width;
+		splitH = paneBundingRect.height;
 		id = pane.dataset['pane-id'];
 
 		contextMenuOpen = true;
@@ -83,13 +86,13 @@
 
 	function onSplitVertically() {
 		if (id !== undefined) {
-			currentLayout = splitCurrentLayout(id, x, y, 'vertical');
+			currentLayout = splitCurrentLayout(id, splitX, splitY, splitW, splitH, 'vertical');
 			contextMenuOpen = false;
 		}
 	}
 	function onSplitHorizontally() {
 		if (id !== undefined) {
-			currentLayout = splitCurrentLayout(id, x, y, 'horizontal');
+			currentLayout = splitCurrentLayout(id, splitX, splitY, splitW, splitH, 'horizontal');
 			contextMenuOpen = false;
 		}
 	}

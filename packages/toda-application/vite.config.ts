@@ -1,84 +1,58 @@
-import { loadEnv, searchForWorkspaceRoot } from 'vite';
-import { defineConfig, mergeConfig } from 'vitest/config';
+import { paraglideVitePlugin } from '@inlang/paraglide-js'
+import { defineConfig, loadEnv, type UserConfig } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { networkInterfaces } from 'node:os';
-import { readFile } from 'node:fs/promises';
-import { paraglide } from '@inlang/paraglide-sveltekit/vite';
+import { readFileSync } from 'node:fs';
+import tailwindcss from '@tailwindcss/vite';
 
-export default defineConfig(async (configEnv) => {
-	const isProd = configEnv.mode === 'production';
+// https://vitejs.dev/config/
+export default defineConfig(async ({ mode }) => {
+	const isProd = mode === "production" || !process.env.TAURI_ENV_DEBUG;
 
-	process.env = { ...process.env, ...loadEnv(configEnv.mode, __dirname, '') };
+	process.env = { ...process.env, ...loadEnv(mode, process.cwd(), '') };
 
-	const packageJSON = JSON.parse((await readFile(`${__dirname}/package.json`)).toString('utf8'));
+	const packageJSON = JSON.parse(readFileSync(`${__dirname}/package.json`).toString('utf8'));
 
-	const host = process.env.TAURI_DEV_HOST || getInternalIpV4();
+	const host = process.env.TAURI_DEV_HOST;
 
-	const define: Record<string, unknown> = {
+	const define = {
 		__VERSION__: JSON.stringify(packageJSON.version)
 	};
 
-	if (!isProd) {
-		if (process.env.PUBLIC_TODA_URL) {
-			define.__DEV_TODA_URL__ = JSON.stringify(setUrlHost(process.env.PUBLIC_TODA_URL, host));
-		}
-	}
-
-	return mergeConfig(configEnv, {
-		plugins: [
-			paraglide({
-				project: './project.inlang',
-				outdir: './src/lib/paraglide'
-			}),
-			sveltekit()
-		],
+	const config: UserConfig = {
+		clearScreen: false,
 		server: {
-			host: '0.0.0.0',
+			host: host || '0.0.0.0',
 			port: 5173,
 			strictPort: true,
-			hmr: {
+			hmr: host ? {
+				protocol: 'ws',
 				host,
-				port: 5183
-			},
+				port: 5183,
+			} : undefined,
 			watch: {
 				ignored: ['**/src-tauri/**']
-			},
-			fs: {
-				allow: ['../..']
 			}
 		},
-		define,
+		envPrefix: ['VITE_', 'TAURI_ENV_*'],
+		plugins: [
+			tailwindcss(),
+			sveltekit(),
+			paraglideVitePlugin({
+				project: './project.inlang',
+				outdir: './src/lib/paraglide',
+				strategy: ['baseLocale', 'preferredLanguage'],
+			}),
+		],
+		build: {
+			target:
+				(!process.env.TAURI_ENV_PLATFORM || process.env.TAURI_ENV_PLATFORM === 'windows')
+					? 'chrome105'
+					: 'safari13',
+			minify: isProd ? 'esbuild' : false,
+			sourcemap: !isProd,
+		},
+		define
+	};
 
-		test: {
-			include: ['src/**/*.{test,spec}.{js,ts}']
-		}
-	});
+	return config;
 });
-
-function setUrlHost(urlValue: string, host: string) {
-	const url = new URL(urlValue);
-	url.host = host;
-	let urlString = url.toString();
-	if (urlString.endsWith('/')) {
-		urlString = urlString.slice(0, -1);
-	}
-	return urlString;
-}
-
-function getInternalIpV4() {
-	if (process.env.TAURI_DEV_HOST) {
-		return process.env.TAURI_DEV_HOST;
-	}
-	const nets = networkInterfaces();
-	for (const networks of Object.values(nets)) {
-		if (networks) {
-			for (const net of networks) {
-				const familyV4Value = typeof net.family === 'string' ? 'IPv4' : 4;
-				if (net.family === familyV4Value && !net.internal) {
-					return net.address;
-				}
-			}
-		}
-	}
-	return '0.0.0.0';
-}

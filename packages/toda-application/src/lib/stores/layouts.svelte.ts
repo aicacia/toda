@@ -13,8 +13,7 @@ export type LayoutSplitPane = {
   id: string;
   type: "split-pane",
   direction: Direction;
-  width?: number;
-  height?: number;
+  value: number;
   first: string;
   second: string;
 };
@@ -49,7 +48,7 @@ export function getOrCreateCurrentLayout() {
   return currentLayout;
 }
 
-export function splitCurrentLayout(id: string, x: number, y: number, direction: Direction, side: Side = "first") {
+export function splitCurrentLayout(id: string, x: number, y: number, width: number, height: number, direction: Direction, side: Side = "first") {
   let layout = getOrCreateCurrentLayout();
 
   let pane = layout.panes[id];
@@ -69,8 +68,7 @@ export function splitCurrentLayout(id: string, x: number, y: number, direction: 
     direction,
     first,
     second,
-    width: direction === "vertical" ? x : undefined,
-    height: direction === "horizontal" ? y : undefined
+    value: direction === "vertical" ? x : y
   };
 
   layout.panes[newPane.id] = newPane;
@@ -80,8 +78,15 @@ export function splitCurrentLayout(id: string, x: number, y: number, direction: 
 export function updateExtension(id: string, extension: string) {
   let layout = getOrCreateCurrentLayout();
   let pane = layout.panes[id];
-  if (pane.type === "extension-pane") {
+  if (pane?.type === "extension-pane") {
     pane.extension = extension;
+  }
+}
+export function updateValue(id: string, value: number) {
+  let layout = getOrCreateCurrentLayout();
+  let pane = layout.panes[id];
+  if (pane?.type === "split-pane") {
+    pane.value = value;
   }
 }
 
