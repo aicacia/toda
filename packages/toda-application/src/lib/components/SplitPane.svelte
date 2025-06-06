@@ -18,6 +18,11 @@
 </script>
 
 <script lang="ts">
+	import ArrowRight from 'lucide-svelte/icons/arrow-right';
+	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
+	import ArrowUp from 'lucide-svelte/icons/arrow-up';
+	import ArrowDown from 'lucide-svelte/icons/arrow-down';
+
 	let {
 		direction = $bindable('vertical'),
 		value = $bindable(0),
@@ -71,7 +76,7 @@
 
 <div
 	bind:this={element}
-	class="relative flex h-full w-full"
+	class="pane-container relative flex h-full w-full"
 	class:flex-row={vertical}
 	class:flex-col={horizontal}
 	class:cursor-col-resize={vertical && mousedown}
@@ -84,28 +89,50 @@
 	role="grid"
 	tabindex="0"
 >
-	<div class="flex grow flex-col" class:w-full={horizontal} class:h-full={vertical}>
+	<div class="pane-first flex grow flex-col" class:w-full={horizontal} class:h-full={vertical}>
 		<div
-			class="flex grow flex-col overflow-auto"
+			class="relative flex grow flex-col overflow-auto"
 			style="width:{vertical ? `${firstSize}px` : 'inherit'};height:{horizontal
 				? `${firstSize}px`
 				: 'inherit'};"
 		>
-			<Pane {...first} />
+			<Pane {...first} side="first" />
+			<div
+				class="join-direction absolute left-0 top-0 hidden h-full w-full items-center justify-center bg-black/25 opacity-25"
+			>
+				<div class="h-[50vh] w-auto">
+					{#if vertical}
+						<ArrowLeft size="100%" />
+					{:else}
+						<ArrowUp size="100%" />
+					{/if}
+				</div>
+			</div>
 		</div>
 	</div>
-	<div class="flex grow flex-col" class:w-full={horizontal} class:h-full={vertical}>
+	<div class="pane-second flex grow flex-col" class:w-full={horizontal} class:h-full={vertical}>
 		<div
-			class="flex grow flex-col overflow-auto"
+			class="relative flex grow flex-col overflow-auto"
 			style="width:{vertical ? `${secondSize}px` : 'inherit'};height:{horizontal
 				? `${secondSize}px`
 				: 'inherit'};"
 		>
-			<Pane {...second} />
+			<Pane {...second} side="second" />
+			<div
+				class="join-direction absolute left-0 top-0 hidden h-full w-full items-center justify-center bg-black/25 opacity-25"
+			>
+				<div class="h-[50vh] w-auto">
+					{#if vertical}
+						<ArrowRight size="100%" />
+					{:else}
+						<ArrowDown size="100%" />
+					{/if}
+				</div>
+			</div>
 		</div>
 	</div>
 	<div
-		class="absolute z-10"
+		class="divider absolute z-10"
 		class:px-[6px]={vertical}
 		class:py-[6px]={horizontal}
 		class:w-full={horizontal}
@@ -130,3 +157,14 @@
 		></div>
 	</div>
 </div>
+
+<style lang="postcss">
+	@reference "tailwindcss";
+
+	:global {
+		.pane-container[data-side='first'] .pane-first .join-direction,
+		.pane-container[data-side='second'] .pane-second .join-direction {
+			@apply flex;
+		}
+	}
+</style>

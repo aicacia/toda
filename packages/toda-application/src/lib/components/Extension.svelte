@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import type { ExtensionContext } from '@toda/core';
+	import { onMount } from 'svelte';
 
 	export interface ExtensionProps {
 		context: ExtensionContext;
@@ -14,9 +15,7 @@
 		await context.mount!(element);
 	}
 
-	$effect(() => {
-		handleMount();
-	});
+	onMount(handleMount);
 </script>
 
 <div

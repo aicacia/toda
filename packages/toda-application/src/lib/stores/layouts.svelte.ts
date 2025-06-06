@@ -48,6 +48,39 @@ export function getOrCreateCurrentLayout() {
   return currentLayout;
 }
 
+export function joinCurrentLayout(id: string, side: Side = "first") {
+  let layout = getOrCreateCurrentLayout();
+
+  let pane = layout.panes[id];
+  if (pane?.type === "split-pane") {
+    const newPaneId = side === "second" ? pane.first : pane.second;
+    if (side === "second") {
+      delete layout.panes[pane.second];
+    } else {
+      delete layout.panes[pane.first];
+    }
+
+    for (const p of Object.values(layout.panes)) {
+      if (p.type !== "split-pane") {
+        continue;
+      }
+      if (p.first === id) {
+        p.first = newPaneId;
+      }
+      if (p.second === id) {
+        p.second === newPaneId;
+      }
+    }
+
+    if (layout.id === id) {
+      layout.id = newPaneId;
+    }
+    delete layout.panes[id];
+  }
+
+  return layout;
+}
+
 export function splitCurrentLayout(id: string, x: number, y: number, width: number, height: number, direction: Direction, side: Side = "first") {
   let layout = getOrCreateCurrentLayout();
 

@@ -12,9 +12,6 @@ export function createUniqueId(type: string) {
 }
 
 export function getOrigin() {
-	if (typeof __DEV_TODA_URL__ !== 'undefined') {
-		return __DEV_TODA_URL__;
-	}
 	if (browser) {
 		return window.location.origin;
 	}

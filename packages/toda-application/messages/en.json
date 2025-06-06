@@ -7,5 +7,6 @@
 	"pane_extension_placeholder": "Select an Extension",
 	"pane_contextmanu_split_vertically": "Split vertically",
 	"pane_contextmanu_split_horizontally": "Split horizontally",
-	"locales_en": "English"
+	"locales_en": "English",
+	"pane_contextmanu_join": "Join"
 }
