@@ -1,10 +1,3 @@
-export { ExtensionCommands, type ExtensionCommand } from './ExtensionCommands';
-export {
-	ExtensionContext,
-	type ExtensionConfig,
-	type ExtensionFunction,
-	type Subscription,
-	type MountFunction,
-	type MountWebviewOptions
-} from './ExtensionContext';
-export { ExtensionHypergraph } from './ExtensionHypergraph';
+export { Hypergraph } from './Hypergraph';
+export { WorkerEventEmitter, isWorkerMessage, type WorkerEventEmitterEventTypes, type WorkerEventEmitterMessage } from './WorkerEventEmitter';
+export { extensionsPath, type Config, type PackageJSON } from './extension';

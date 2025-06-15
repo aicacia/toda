@@ -1,4 +1,3 @@
-import { join, homeDir } from '@tauri-apps/api/path';
 import {
 	type Edge,
 	type Node,
@@ -18,23 +17,10 @@ import {
 	deleteEdges,
 	deleteEdgesByURI
 } from 'tauri-plugin-hypergraphsql';
-import { ExtensionContext } from './ExtensionContext';
 
-export class ExtensionHypergraph {
-	#context: ExtensionContext;
-
-	constructor(context: ExtensionContext) {
-		this.#context = context;
-	}
-
-	uri = (uri: string) => {
-		return `${this.#context.name}/${uri}`;
-	}
-
-	async filename() {
-		// TODO: allow database to be switched out
-		return join(await homeDir(), '.toda', 'databases', 'toda.db');
-	}
+export abstract class Hypergraph {
+	abstract filename(): Promise<string>;
+	abstract prefixUriFn(uri: string): string;
 
 	query<FN = object, TN = object, E = object>(
 		kind: 'node_edge',
@@ -45,11 +31,11 @@ export class ExtensionHypergraph {
 	query<E = object>(kind: 'edge', query: Query, prefixUri?: boolean): Promise<Array<Edge<E>>>;
 
 	async query(kind: QueryKind, rawQuery: Query, prefixUri = true) {
-		return query(await this.filename(), kind as never, prefixUri ? prefixQuery(rawQuery, this.uri) : rawQuery) as never;
+		return query(await this.filename(), kind as never, prefixUri ? prefixQuery(rawQuery, this.prefixUriFn) : rawQuery) as never;
 	}
 
 	async createNode<T>(uri: string, data: T, prefixUri = true) {
-		return createNode(await this.filename(), prefixUri ? this.uri(uri) : uri, data);
+		return createNode(await this.filename(), prefixUri ? this.prefixUriFn(uri) : uri, data);
 	}
 
 	async updateNode<T>(nodeId: number, data: T) {
@@ -65,7 +51,7 @@ export class ExtensionHypergraph {
 	}
 
 	async deleteNodesByURI(uri: string, prefixUri = true) {
-		return deleteNodesByURI(await this.filename(), prefixUri ? this.uri(uri) : uri);
+		return deleteNodesByURI(await this.filename(), prefixUri ? this.prefixUriFn(uri) : uri);
 	}
 
 	async createEdge<T>(
@@ -79,7 +65,7 @@ export class ExtensionHypergraph {
 			await this.filename(),
 			fromNodeId,
 			toNodeId,
-			prefixUri ? this.uri(uri) : uri,
+			prefixUri ? this.prefixUriFn(uri) : uri,
 			data
 		);
 	}
@@ -96,28 +82,28 @@ export class ExtensionHypergraph {
 		return deleteEdges(await this.filename(), edgeIds);
 	}
 
-	async deleteEdgesByURI(uri: string, prefixUri = true) {
-		return deleteEdgesByURI(await this.filename(), prefixUri ? this.uri(uri) : uri);
+	async deleteEdgesByURI(uri: string, prefixUri?: (uri: string) => string) {
+		return deleteEdgesByURI(await this.filename(), prefixUri ? prefixUri(uri) : uri);
 	}
 }
 
-function prefixQuery(query: Query, prefixFn: (uri: string) => string): Query {
+function prefixQuery(query: Query, prefixUriFn: (uri: string) => string): Query {
 	const prefixedQuery: Query = {};
 	for (const [key, value] of Object.entries(query)) {
 		switch (key) {
-			case "node.uri":
-			case "edge.uri":
-				prefixedQuery[key] = prefixQueryRecur(value, prefixFn);
+			case 'node.uri':
+			case 'edge.uri':
+				prefixedQuery[key] = prefixQueryRecur(value, prefixUriFn);
 				break;
 			default:
-				(prefixedQuery as any)[key] = value;
+				(prefixedQuery as { [key: string]: QueryExpr })[key] = value;
 				break;
 		}
 	}
 	return prefixedQuery;
 }
 
-function prefixQueryRecur(query: QueryExpr, prefixFn: (uri: string) => string): QueryExpr {
+function prefixQueryRecur(query: QueryExpr, prefixUriFn: (uri: string) => string): QueryExpr {
 	if (query !== null && typeof query === 'object') {
 		const prefixedQuery: QueryExpr = {};
 		for (const [key, value] of Object.entries(query)) {
@@ -125,16 +111,17 @@ function prefixQueryRecur(query: QueryExpr, prefixFn: (uri: string) => string): 
 				case 'in':
 				case 'and':
 				case 'or':
-					prefixedQuery[key] = value.map((v: QueryExpr) => prefixQueryRecur(v, prefixFn));
+					prefixedQuery[key] = value.map((v: QueryExpr) => prefixQueryRecur(v, prefixUriFn));
 					break;
 				default:
-					(prefixedQuery as any)[key] = prefixQueryRecur(value, prefixFn);
+					(prefixedQuery as { [key: string]: QueryExpr })[key] = prefixQueryRecur(value, prefixUriFn);
 					break;
 			}
 		}
 		return prefixedQuery;
-	} else if (typeof query === 'string') {
-		return prefixFn(query);
+	}
+	if (typeof query === 'string') {
+		return prefixUriFn(query);
 	}
 	return query;
 }

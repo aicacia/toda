@@ -1,19 +1,17 @@
 <script lang="ts" module>
-	import type { PaneProps } from './Pane.svelte';
+	import type { PaneProps, BasePaneProps } from './Pane.svelte';
 	import Pane from './Pane.svelte';
 	import { noop } from '$lib/util';
 
 	export type SplitPaneDirection = 'vertical' | 'horizontal';
 
-	export interface SplitPaneProps {
-		id: string;
+	export interface SplitPaneProps extends BasePaneProps {
 		direction?: SplitPaneDirection;
-		value?: number;
-		width?: number;
-		height?: number;
+		splitAt?: number;
 		first: PaneProps;
 		second: PaneProps;
-		onchange?(value: number): void;
+		onsplitatchange?(splitAt: number): void;
+		onsizechange?(width: number, height: number): void;
 	}
 </script>
 
@@ -25,13 +23,26 @@
 
 	let {
 		direction = $bindable('vertical'),
-		value = $bindable(0),
-		width = $bindable(0),
-		height = $bindable(0),
+		splitAt = $bindable(0),
+		x,
+		y,
+		width,
+		height,
 		first,
 		second,
-		onchange = noop
+		onsplitatchange = noop,
+		onsizechange = noop
 	}: SplitPaneProps = $props();
+
+	let lastWidth = width;
+	let lastHeight = height;
+	$effect(() => {
+		if (lastWidth !== width || lastHeight !== height) {
+			lastWidth = width;
+			lastHeight = height;
+			onsizechange(width, height);
+		}
+	});
 
 	let vertical = $state(direction === 'vertical');
 	let horizontal = $state(direction === 'horizontal');
@@ -47,10 +58,10 @@
 		if (size === 0) {
 			return;
 		}
-		value = Math.max(0, Math.min(value, size));
-		firstSize = value;
+		splitAt = Math.max(0, Math.min(splitAt, size));
+		firstSize = splitAt;
 		secondSize = size - firstSize;
-		onchange(value);
+		onsplitatchange(splitAt);
 	});
 
 	let element: HTMLElement;
@@ -64,7 +75,7 @@
 	function onMouseMove(e: MouseEvent) {
 		if (mousedown) {
 			const boundingRect = element.getBoundingClientRect();
-			value = vertical ? e.clientX - boundingRect.left : e.clientY - boundingRect.top;
+			splitAt = vertical ? e.clientX - boundingRect.left : e.clientY - boundingRect.top;
 		}
 	}
 	function onMouseUp(_e: MouseEvent) {
@@ -96,7 +107,14 @@
 				? `${firstSize}px`
 				: 'inherit'};"
 		>
-			<Pane {...first} side="first" />
+			<Pane
+				{...first}
+				{x}
+				{y}
+				width={vertical ? firstSize : width}
+				height={horizontal ? firstSize : height}
+				side="first"
+			/>
 			<div
 				class="join-direction absolute left-0 top-0 hidden h-full w-full items-center justify-center bg-black/25 opacity-25"
 			>
@@ -117,7 +135,14 @@
 				? `${secondSize}px`
 				: 'inherit'};"
 		>
-			<Pane {...second} side="second" />
+			<Pane
+				{...second}
+				x={vertical ? x + firstSize : x}
+				y={horizontal ? y + firstSize : y}
+				width={vertical ? secondSize : width}
+				height={horizontal ? secondSize : height}
+				side="second"
+			/>
 			<div
 				class="join-direction absolute left-0 top-0 hidden h-full w-full items-center justify-center bg-black/25 opacity-25"
 			>

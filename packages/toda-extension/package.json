@@ -1,10 +1,10 @@
 {
-	"name": "@toda/core",
+	"name": "@toda/extension",
 	"version": "0.1.0",
-	"description": "toda core",
+	"description": "toda extension",
 	"keywords": [
 		"toda",
-		"core"
+		"extension"
 	],
 	"author": "Nathan Faucett",
 	"license": "(MIT OR Apache-2.0)",
@@ -60,6 +60,7 @@
 	},
 	"dependencies": {
 		"@tauri-apps/api": "2",
+		"@toda/core": "workspace:todo-core",
 		"eventemitter3": "5"
 	},
 	"nyc": {

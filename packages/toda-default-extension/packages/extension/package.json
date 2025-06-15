@@ -1,0 +1,39 @@
+{
+	"name": "@toda/default-extension-extension",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"build": "rollup -c",
+		"prepublishOnly": "pnpm run build",
+		"lint": "biome lint ./src",
+		"format": "biome format --write .",
+		"preCommit": "pnpm run format && pnpm run lint && pnpm run coverage",
+		"prepare": "husky"
+	},
+	"husky": {
+		"hooks": {
+			"pre-commit": "pnpm run preCommit"
+		}
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1",
+		"@rollup/plugin-commonjs": "28",
+		"@rollup/plugin-node-resolve": "16",
+		"@rollup/plugin-terser": "0",
+		"@rollup/plugin-typescript": "12",
+		"rollup-plugin-esm-import-to-url": "2",
+		"process": "0",
+		"rollup": "4",
+		"husky": "9",
+		"tslib": "2",
+		"typedoc": "0",
+		"typescript": "5"
+	},
+	"peerDependencies": {
+		"tslib": "2"
+	},
+	"dependencies": {
+		"@toda/extension": "workspace:todo-extension"
+	}
+}

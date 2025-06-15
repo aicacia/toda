@@ -20,7 +20,6 @@ pub fn run() {
     let home_dir = app.path().home_dir()?;
     create_dir_all(home_dir.join(".toda").join("databases"))?;
     create_dir_all(home_dir.join(".toda").join("extensions"))?;
-    create_dir_all(home_dir.join(".toda").join("plugins"))?;
     Ok(())
   });
 
@@ -35,17 +34,38 @@ pub fn run() {
     });
   }
 
-  builder = builder.register_uri_scheme_protocol("plugins", |ctx, req| {
+  builder = builder.register_uri_scheme_protocol("toda", |ctx, req| {
     let home_dir = match ctx.app_handle().path().home_dir() {
       Ok(p) => p,
       Err(e) => return internal_server_error(e),
     };
-    let resource_relative_path = match extract_plugin_resource_path(&req) {
+    let (namespace, path) = match extract_extension_resource_path(&req) {
       Some(p) => p,
       None => return not_found_response(),
     };
-    let root = home_dir.join(".toda").join("plugins");
-    match std::fs::File::open(root.join(&resource_relative_path)) {
+    let root = home_dir.join(".toda").join("extensions").join(namespace);
+    let filename = match std::fs::File::open(root.join("package.json")) {
+      Ok(file) => match serde_json::from_reader::<_, serde_json::Value>(file) {
+        Ok(json) => {
+          if let Some(package_json) = json.as_object() {
+            root
+              .join(
+                package_json
+                  .get("view")
+                  .and_then(serde_json::Value::as_str)
+                  .map(ToOwned::to_owned)
+                  .unwrap_or_default(),
+              )
+              .join(path)
+          } else {
+            return not_found_response();
+          }
+        }
+        Err(e) => return internal_server_error(Error::Json(e)),
+      },
+      Err(e) => return internal_server_error(Error::Io(e)),
+    };
+    match std::fs::File::open(filename) {
       Ok(mut file) => {
         let mut contents = Vec::new();
         if let Err(e) = file.read_to_end(&mut contents) {
@@ -58,7 +78,7 @@ pub fn run() {
           .body(contents)
           .unwrap()
       }
-      Err(e) => internal_server_error(Error::Io(e)),
+      Err(e) => return internal_server_error(Error::Io(e)),
     }
   });
 
@@ -84,12 +104,23 @@ fn not_found_response() -> http::Response<Vec<u8>> {
     .unwrap()
 }
 
-fn extract_plugin_resource_path<T>(req: &http::Request<T>) -> Option<String> {
+fn extract_extension_resource_path<T>(req: &http::Request<T>) -> Option<(String, String)> {
   let uri = req.uri().to_string();
-
-  if !uri.starts_with("plugins://") {
+  if !uri.starts_with("toda://") {
     return None;
   }
-
-  return Some((&uri["plugins://".len()..]).to_owned());
+  let path = uri["toda://".len()..].to_owned();
+  if let Some((name, rest)) = path.split_once('/') {
+    if let Some((namespace, name)) = name.split_once('.') {
+      let mut new_name = String::new();
+      new_name.push('@');
+      new_name.push_str(namespace);
+      new_name.push('/');
+      new_name.push_str(name);
+      return Some((new_name, rest.to_owned()));
+    } else {
+      return Some((name.to_owned(), rest.to_owned()));
+    }
+  }
+  Some((path, "index.html".to_owned()))
 }

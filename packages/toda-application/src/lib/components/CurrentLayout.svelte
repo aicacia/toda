@@ -1,69 +1,96 @@
 <script lang="ts" module>
 	import * as m from '$lib/paraglide/messages';
 
-	function buildLayout(layout: Layout, id: string = layout.id): PaneProps<any> {
+	function buildLayout(
+		layout: Layout,
+		id: string = layout.id,
+		x = 0,
+		y = 0,
+		width = 0,
+		height = 0
+		// biome-ignore lint/suspicious/noExplicitAny: any
+	): PaneProps<any> {
 		const pane = layout.panes[id];
 		if (pane.type === 'extension-pane') {
 			if (pane.extension) {
-				const context = extensions[pane.extension];
-				if (context) {
-					return { id, Component: Extension, props: { context } };
+				const extension = extensions[pane.extension];
+				if (extension) {
+					return {
+						id,
+						Component: Extension,
+						x,
+						y,
+						width,
+						height,
+						props: { extension } as ExtensionProps
+					};
 				}
 			}
 			return {
 				id,
 				Component: EmptyPane,
+				x,
+				y,
+				width,
+				height,
 				props: {
-					onSetExtension(extension: string) {
-						return updateExtension(id, extension);
+					onSetExtension(extension?: string) {
+						updateExtension(id, extension);
 					}
-				}
+				} as EmptyPaneProps
 			};
 		}
 		return {
 			id,
 			Component: SplitPane,
+			x,
+			y,
+			width,
+			height,
 			props: {
 				direction: pane.direction,
-				value: pane.value,
-				onchange(value: number) {
-					updateValue(id, value);
+				splitAt: pane.splitAt,
+				onsplitatchange(splitAt: number) {
+					updateSplitAt(id, splitAt);
+				},
+				onsizechange(width: number, height: number) {
+					updateSize(id, width, height);
 				},
 				first: buildLayout(layout, pane.first),
 				second: buildLayout(layout, pane.second)
-			}
+			} as SplitPaneProps
 		};
 	}
 </script>
 
 <script lang="ts">
 	import {
-		getOrCreateCurrentLayout,
 		joinCurrentLayout,
+		layouts,
 		splitCurrentLayout,
 		updateExtension,
-		updateValue,
+		updateSplitAt,
+		updateSize,
 		type Layout,
 		type Side
 	} from '$lib/stores/layouts.svelte';
-	import EmptyPane from './EmptyPane.svelte';
-	import Extension from './Extension.svelte';
-	import SplitPane from './SplitPane.svelte';
+	import EmptyPane, { type EmptyPaneProps } from './EmptyPane.svelte';
+	import Extension, { type ExtensionProps } from './Extension.svelte';
+	import SplitPane, { type SplitPaneProps } from './SplitPane.svelte';
 	import { extensions } from '$lib/stores/extensions.svelte';
 	import Popup from './Popup.svelte';
-	import type { PaneProps } from './Pane.svelte';
+	import type { PaneProps, BasePaneProps } from './Pane.svelte';
 	import Pane from './Pane.svelte';
-	import type { Pointer } from 'lucide-svelte';
 
-	let currentLayout = $state(getOrCreateCurrentLayout());
-	let layout = $derived(buildLayout(currentLayout));
+	let contentRect = $state<DOMRectReadOnly>();
+	let layout = $derived(buildLayout(layouts.current));
 
 	let element: HTMLElement;
 	let contextMenuOpen = $state(false);
 	let contextMenuDivider = $state(false);
 	let contextMenuAnchor: HTMLElement | undefined = $state();
-	let x = $state(0);
-	let y = $state(0);
+	let mouseX = $state(0);
+	let mouseY = $state(0);
 	let splitX = $state(0);
 	let splitY = $state(0);
 	let splitW = $state(0);
@@ -76,8 +103,8 @@
 		e.stopPropagation();
 
 		const boundingRect = element.getBoundingClientRect();
-		x = e.clientX - boundingRect.left;
-		y = e.clientY - boundingRect.top;
+		mouseX = e.clientX - boundingRect.left;
+		mouseY = e.clientY - boundingRect.top;
 
 		const target = e.target as HTMLElement;
 		contextMenuDivider = target.classList.contains('divider');
@@ -87,8 +114,8 @@
 		} else {
 			const pane = target.closest('.pane') as HTMLElement;
 			const paneBundingRect = pane.getBoundingClientRect();
-			splitX = x - paneBundingRect.left;
-			splitY = y - paneBundingRect.top;
+			splitX = mouseX - paneBundingRect.left;
+			splitY = mouseY - paneBundingRect.top;
 			splitW = paneBundingRect.width;
 			splitH = paneBundingRect.height;
 			id = pane.dataset['pane-id'];
@@ -97,7 +124,7 @@
 	}
 	function onPointerUp() {
 		if (id && join) {
-			currentLayout = joinCurrentLayout(id, join);
+			joinCurrentLayout(id, join);
 			join = undefined;
 		}
 	}
@@ -121,14 +148,14 @@
 	}
 	function onSplitVertically() {
 		if (id) {
-			currentLayout = splitCurrentLayout(id, splitX, splitY, splitW, splitH, 'vertical');
+			splitCurrentLayout(id, splitX, splitY, splitW, splitH, 'vertical');
 			id = undefined;
 			contextMenuOpen = false;
 		}
 	}
 	function onSplitHorizontally() {
 		if (id !== undefined) {
-			currentLayout = splitCurrentLayout(id, splitX, splitY, splitW, splitH, 'horizontal');
+			splitCurrentLayout(id, splitX, splitY, splitW, splitH, 'horizontal');
 			id = undefined;
 			contextMenuOpen = false;
 		}
@@ -141,11 +168,20 @@
 	oncontextmenu={onContextMenu}
 	onpointerupcapture={onPointerUp}
 	onpointermovecapture={onPointerMove}
+	bind:contentRect
 	role="grid"
 	tabindex="0"
 >
-	<Pane id={layout.id} Component={layout.Component} props={layout.props} />
-	<div bind:this={contextMenuAnchor} class="absolute" style="left:{x}px;top:{y}px;"></div>
+	<Pane
+		id={layout.id}
+		Component={layout.Component}
+		props={layout.props}
+		x={contentRect.x}
+		y={contentRect.y}
+		width={contentRect.width}
+		height={contentRect.height}
+	/>
+	<div bind:this={contextMenuAnchor} class="absolute" style="left:{mouseX}px;top:{mouseY}px;"></div>
 </div>
 
 <Popup

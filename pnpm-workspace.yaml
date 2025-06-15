@@ -1,7 +1,7 @@
 packages:
-  - packages/*
+  - packages/**/*
 onlyBuiltDependencies:
-  - '@biomejs/biome'
-  - '@sveltejs/kit'
-  - '@tailwindcss/oxide'
+  - "@biomejs/biome"
+  - "@sveltejs/kit"
+  - "@tailwindcss/oxide"
   - esbuild

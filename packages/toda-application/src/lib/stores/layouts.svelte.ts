@@ -13,7 +13,9 @@ export type LayoutSplitPane = {
   id: string;
   type: "split-pane",
   direction: Direction;
-  value: number;
+  splitAt: number;
+  width: number;
+  height: number;
   first: string;
   second: string;
 };
@@ -28,99 +30,134 @@ export type Layout = {
 
 export type Layouts = { [name: string]: Layout };
 
-export const layouts = $state<Layouts>({});
+let currentLayoutName = $state<string>("default");
 
-let currentLayoutName = $state<string | undefined>();
+const defaultPaneId = createUniqueId("pane");
+const defaultPane: LayoutExtensionPane = { id: defaultPaneId, type: "extension-pane" };
+const layoutsByName = $state<Layouts>({
+  default: {
+    id: defaultPaneId, name: currentLayoutName, panes: { [defaultPaneId]: defaultPane }
+  }
+});
 
-export function getOrCreateCurrentLayout() {
-  if (!currentLayoutName) {
-    currentLayoutName = "default";
+let currentLayout = $derived(layoutsByName[currentLayoutName]);
+
+export const layouts = {
+  get byName() {
+    return layoutsByName;
+  },
+  get currentName() {
+    return currentLayoutName;
+  },
+  get current() {
+    return currentLayout;
   }
-  let currentLayout = layouts[currentLayoutName];
-  if (!currentLayout) {
-    const id = createUniqueId("pane");
-    const pane: LayoutExtensionPane = { id, type: "extension-pane" };
-    currentLayout = {
-      id, name: currentLayoutName, panes: { [id]: pane }
-    };
-    layouts[currentLayoutName] = currentLayout;
-  }
-  return currentLayout;
-}
+};
 
 export function joinCurrentLayout(id: string, side: Side = "first") {
-  let layout = getOrCreateCurrentLayout();
-
-  let pane = layout.panes[id];
-  if (pane?.type === "split-pane") {
-    const newPaneId = side === "second" ? pane.first : pane.second;
-    if (side === "second") {
-      delete layout.panes[pane.second];
-    } else {
-      delete layout.panes[pane.first];
-    }
-
-    for (const p of Object.values(layout.panes)) {
-      if (p.type !== "split-pane") {
-        continue;
+  return updateCurrentLayout(layout => {
+    let pane = layout.panes[id];
+    if (pane?.type === "split-pane") {
+      const newPaneId = side === "second" ? pane.first : pane.second;
+      if (side === "second") {
+        delete layout.panes[pane.second];
+      } else {
+        delete layout.panes[pane.first];
       }
-      if (p.first === id) {
-        p.first = newPaneId;
-      }
-      if (p.second === id) {
-        p.second === newPaneId;
-      }
-    }
 
-    if (layout.id === id) {
-      layout.id = newPaneId;
-    }
-    delete layout.panes[id];
-  }
+      for (const p of Object.values(layout.panes)) {
+        if (p.type !== "split-pane") {
+          continue;
+        }
+        if (p.first === id) {
+          p.first = newPaneId;
+        }
+        if (p.second === id) {
+          p.second === newPaneId;
+        }
+      }
 
-  return layout;
+      if (layout.id === id) {
+        layout.id = newPaneId;
+      }
+      delete layout.panes[id];
+    }
+    return layout;
+  });
 }
 
 export function splitCurrentLayout(id: string, x: number, y: number, width: number, height: number, direction: Direction, side: Side = "first") {
-  let layout = getOrCreateCurrentLayout();
+  return updateCurrentLayout(layout => {
+    let pane = layout.panes[id];
 
-  let pane = layout.panes[id];
+    let first, second;
+    if (side === "first") {
+      first = pane ? clonePane(layout, pane) : createEmptyPane(layout);
+      second = createEmptyPane(layout)
+    } else {
+      first = createEmptyPane(layout);
+      second = pane ? clonePane(layout, pane) : createEmptyPane(layout);
+    }
 
-  let first, second;
-  if (side === "first") {
-    first = pane ? clonePane(layout, pane) : createEmptyPane(layout);
-    second = createEmptyPane(layout)
-  } else {
-    first = createEmptyPane(layout);
-    second = pane ? clonePane(layout, pane) : createEmptyPane(layout);
+    let newPane: LayoutSplitPane = {
+      id,
+      type: "split-pane",
+      direction,
+      first,
+      second,
+      splitAt: direction === "vertical" ? x : y,
+      width,
+      height
+    };
+
+    layout.panes[newPane.id] = newPane;
+
+    return layout;
+  });
+}
+
+export function updateExtension(id: string, extension?: string) {
+  return updateCurrentLayout(layout => {
+    let pane = layout.panes[id];
+    if (pane?.type === "extension-pane") {
+      if (extension) {
+        pane.extension = extension;
+      } else {
+        delete pane.extension;
+      }
+    }
+    return layout;
+  });
+}
+
+export function updateSplitAt(id: string, splitAt: number) {
+  return updateCurrentLayout(layout => {
+    let pane = layout.panes[id];
+    if (pane?.type === "split-pane") {
+      pane.splitAt = splitAt;
+    }
+    return layout;
+  });
+}
+
+export function updateSize(id: string, width: number, height: number) {
+  return updateCurrentLayout(layout => {
+    let pane = layout.panes[id];
+    if (pane?.type === "split-pane") {
+      pane.width = width;
+      pane.height = height;
+    }
+    return layout;
+  });
+}
+
+function updateCurrentLayout(updateFn: (layout: Layout) => Layout) {
+  if (!currentLayoutName) {
+    currentLayoutName = "default";
   }
-
-  let newPane: LayoutSplitPane = {
-    id,
-    type: "split-pane",
-    direction,
-    first,
-    second,
-    value: direction === "vertical" ? x : y
-  };
-
-  layout.panes[newPane.id] = newPane;
-
+  const layout = updateFn(layouts.current);
+  layoutsByName[currentLayoutName] = layout;
   return layout;
-}
-export function updateExtension(id: string, extension: string) {
-  let layout = getOrCreateCurrentLayout();
-  let pane = layout.panes[id];
-  if (pane?.type === "extension-pane") {
-    pane.extension = extension;
-  }
-}
-export function updateValue(id: string, value: number) {
-  let layout = getOrCreateCurrentLayout();
-  let pane = layout.panes[id];
-  if (pane?.type === "split-pane") {
-    pane.value = value;
-  }
 }
 
 function createEmptyPane(layout: Layout) {
@@ -138,5 +175,5 @@ function clonePane(layout: Layout, pane: LayoutPane) {
 }
 
 export async function registerLayout(name: string, layout: Layout) {
-  layouts[name] = layout;
+  layoutsByName[name] = layout;
 }
