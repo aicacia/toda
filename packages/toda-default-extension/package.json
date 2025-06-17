@@ -2,11 +2,14 @@
 	"name": "@toda/default-extension",
 	"version": "0.1.0",
 	"description": "Default Extension",
+	"devDependencies": {
+		"shx": "0"
+	},
 	"scripts": {
 		"buildExtension": "pnpm --filter @toda/default-extension-extension -r build",
 		"buildView": "pnpm --filter @toda/default-extension-view -r build",
 		"build": "pnpm run buildExtension && pnpm run buildView",
-		"package": "pnpm run build && rm -rf build && mkdir -p build && mv packages/extension/build build/extension && mv packages/view/build build/view"
+		"package": "pnpm run build && shx rm -rf build && shx mkdir -p build && shx mv packages/extension/build build/extension && shx mv packages/view/build build/view"
 	},
 	"main": "build/extension/index.js",
 	"view": "build/view"
