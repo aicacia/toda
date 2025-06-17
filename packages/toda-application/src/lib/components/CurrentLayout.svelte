@@ -96,8 +96,6 @@
 		)
 	);
 
-	$inspect(layout);
-
 	let contextMenuOpen = $state(false);
 	let contextMenuDivider = $state(false);
 	let contextMenuAnchor: HTMLElement | undefined = $state();

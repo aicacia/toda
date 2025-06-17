@@ -25,9 +25,6 @@
 			width,
 			height
 		});
-		webview.listen('tauri://created', function () {
-			console.log(webview);
-		});
 		webview.listen('tauri://error', function (e) {
 			console.error(e);
 		});
