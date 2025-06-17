@@ -41,12 +41,16 @@
 
 	$effect(() => {
 		if (webview) {
-			webview.setPosition(new LogicalPosition(x, y));
+			webview.setPosition(new LogicalPosition(x, y)).catch((err) => {
+				console.error(err);
+			});
 		}
 	});
 	$effect(() => {
 		if (webview) {
-			webview.setSize(new LogicalSize(width, height));
+			webview.setSize(new LogicalSize(width, height)).catch((err) => {
+				console.error(err);
+			});
 		}
 	});
 </script>

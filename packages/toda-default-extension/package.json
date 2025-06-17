@@ -8,8 +8,7 @@
 	"scripts": {
 		"buildExtension": "pnpm --filter @toda/default-extension-extension -r build",
 		"buildView": "pnpm --filter @toda/default-extension-view -r build",
-		"build": "pnpm run buildExtension && pnpm run buildView",
-		"package": "pnpm run build && shx rm -rf build && shx mkdir -p build && shx mv packages/extension/build build/extension && shx mv packages/view/build build/view"
+		"build": "pnpm run buildExtension && pnpm run buildView && shx rm -rf build && shx mkdir -p build && shx mv packages/extension/build build/extension && shx mv packages/view/build build/view"
 	},
 	"main": "build/extension/index.js",
 	"view": "build/view"

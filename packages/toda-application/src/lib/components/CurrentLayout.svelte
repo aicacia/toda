@@ -79,13 +79,25 @@
 	import SplitPane, { type SplitPaneProps } from './SplitPane.svelte';
 	import { extensions } from '$lib/stores/extensions.svelte';
 	import Popup from './Popup.svelte';
-	import type { PaneProps, BasePaneProps } from './Pane.svelte';
+	import type { PaneProps } from './Pane.svelte';
 	import Pane from './Pane.svelte';
 
-	let contentRect = $state<DOMRectReadOnly>();
-	let layout = $derived(buildLayout(layouts.current));
+	let element = $state<HTMLElement>();
+	let offsetWidth = $state(0);
+	let offsetHeight = $state(0);
+	let layout = $derived(
+		buildLayout(
+			layouts.current,
+			layouts.current.id,
+			element?.offsetLeft ?? 0,
+			element?.offsetTop ?? 0,
+			offsetWidth,
+			offsetHeight
+		)
+	);
 
-	let element: HTMLElement;
+	$inspect(layout);
+
 	let contextMenuOpen = $state(false);
 	let contextMenuDivider = $state(false);
 	let contextMenuAnchor: HTMLElement | undefined = $state();
@@ -102,9 +114,8 @@
 		e.preventDefault();
 		e.stopPropagation();
 
-		const boundingRect = element.getBoundingClientRect();
-		mouseX = e.clientX - boundingRect.left;
-		mouseY = e.clientY - boundingRect.top;
+		mouseX = e.clientX - (element?.offsetLeft ?? 0);
+		mouseY = e.clientY - (element?.offsetTop ?? 0);
 
 		const target = e.target as HTMLElement;
 		contextMenuDivider = target.classList.contains('divider');
@@ -164,11 +175,12 @@
 
 <div
 	bind:this={element}
+	bind:offsetWidth
+	bind:offsetHeight
 	class="relative flex flex-grow flex-col overflow-hidden"
 	oncontextmenu={onContextMenu}
 	onpointerupcapture={onPointerUp}
 	onpointermovecapture={onPointerMove}
-	bind:contentRect
 	role="grid"
 	tabindex="0"
 >
@@ -176,10 +188,10 @@
 		id={layout.id}
 		Component={layout.Component}
 		props={layout.props}
-		x={contentRect.x}
-		y={contentRect.y}
-		width={contentRect.width}
-		height={contentRect.height}
+		x={layout.x}
+		y={layout.y}
+		width={layout.width}
+		height={layout.height}
 	/>
 	<div bind:this={contextMenuAnchor} class="absolute" style="left:{mouseX}px;top:{mouseY}px;"></div>
 </div>

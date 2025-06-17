@@ -9,12 +9,11 @@
 		"url": "https://github.com/toda/toda"
 	},
 	"scripts": {
-		"test": "pnpm test -r --filter=./packages/* --workspace-concurrency=1",
 		"check": "pnpm -r prepublishOnly && pnpm -r check",
 		"lint": "pnpm -r lint && eslint --cache --cache-location node_modules/.eslintcache 'packages/**/*.js'",
 		"format": "pnpm -r format",
 		"precommit": "pnpm format && pnpm lint",
-		"build": "pnpm --filter @toda/* -r build",
+		"build": "pnpm --filter @toda/core -r build && pnpm --filter @toda/extension -r build && pnpm --filter @toda/toda-default-extension -r build",
 		"start": "pnpm --filter @toda/application -r desktop"
 	},
 	"devDependencies": {
