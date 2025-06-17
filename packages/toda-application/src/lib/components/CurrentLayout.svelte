@@ -154,7 +154,7 @@
 		}
 	}
 	function onSplitHorizontally() {
-		if (id !== undefined) {
+		if (id) {
 			splitCurrentLayout(id, splitX, splitY, splitW, splitH, 'horizontal');
 			id = undefined;
 			contextMenuOpen = false;

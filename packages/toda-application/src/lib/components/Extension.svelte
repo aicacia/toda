@@ -4,7 +4,7 @@
 	import type { BasePaneProps } from './Pane.svelte';
 	import { Webview } from '@tauri-apps/api/webview';
 	import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
-	import { PhysicalPosition, PhysicalSize } from '@tauri-apps/api/dpi';
+	import { LogicalPosition, LogicalSize } from '@tauri-apps/api/dpi';
 
 	export interface ExtensionProps extends BasePaneProps {
 		extension: Extension;
@@ -17,33 +17,36 @@
 	let webview: Webview | undefined;
 
 	onMount(() => {
-		webview = new Webview(getCurrentWebviewWindow(), id, {
+		const webviewWindow = getCurrentWebviewWindow();
+		webview = new Webview(webviewWindow, id, {
 			url: extension.uri(`index.html`),
 			x,
 			y,
 			width,
 			height
 		});
-		webview.once('tauri://created', function () {
+		webview.listen('tauri://created', function () {
 			console.log(webview);
 		});
-		webview.once('tauri://error', function (e) {
+		webview.listen('tauri://error', function (e) {
 			console.error(e);
 		});
-
-		return () => {
+		function onClose() {
+			window.removeEventListener('beforeunload', onClose);
 			webview?.close();
-		};
+		}
+		window.addEventListener('beforeunload', onClose);
+		return onClose;
 	});
 
 	$effect(() => {
 		if (webview) {
-			webview.setPosition(new PhysicalPosition(x, y));
+			webview.setPosition(new LogicalPosition(x, y));
 		}
 	});
 	$effect(() => {
 		if (webview) {
-			webview.setSize(new PhysicalSize(width, height));
+			webview.setSize(new LogicalSize(width, height));
 		}
 	});
 </script>
