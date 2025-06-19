@@ -1,39 +1,40 @@
 <script lang="ts" module>
 	import * as m from '$lib/paraglide/messages';
 
-	function buildLayout(
+	function buildLayout<T extends BasePaneProps = BasePaneProps>(
 		layout: Layout,
 		id: string = layout.id,
 		x = 0,
 		y = 0,
 		width = 0,
 		height = 0
-		// biome-ignore lint/suspicious/noExplicitAny: any
-	): PaneProps<any> {
+	): PaneProps<T> {
 		const pane = layout.panes[id];
 		if (pane.type === 'extension-pane') {
 			if (pane.extension) {
 				const extension = extensions[pane.extension];
 				if (extension) {
 					return {
-						id,
 						Component: Extension,
-						x,
-						y,
-						width,
-						height,
-						props: { extension } as ExtensionProps
+						props: {
+							id,
+							x,
+							y,
+							width,
+							height,
+							extension
+						} as ExtensionProps
 					};
 				}
 			}
 			return {
-				id,
 				Component: EmptyPane,
-				x,
-				y,
-				width,
-				height,
 				props: {
+					id,
+					x,
+					y,
+					width,
+					height,
 					onSetExtension(extension?: string) {
 						updateExtension(id, extension);
 					}
@@ -41,13 +42,13 @@
 			};
 		}
 		return {
-			id,
 			Component: SplitPane,
-			x,
-			y,
-			width,
-			height,
 			props: {
+				id,
+				x,
+				y,
+				width,
+				height,
 				direction: pane.direction,
 				splitAt: pane.splitAt,
 				onsplitatchange(splitAt: number) {
@@ -79,13 +80,13 @@
 	import SplitPane, { type SplitPaneProps } from './SplitPane.svelte';
 	import { extensions } from '$lib/stores/extensions.svelte';
 	import Popup from './Popup.svelte';
-	import type { PaneProps } from './Pane.svelte';
+	import type { BasePaneProps, PaneProps } from './Pane.svelte';
 	import Pane from './Pane.svelte';
 
 	let element = $state<HTMLElement>();
 	let offsetWidth = $state(0);
 	let offsetHeight = $state(0);
-	let layout = $derived(
+	const layout = $derived(
 		buildLayout(
 			layouts.current,
 			layouts.current.id,
@@ -182,15 +183,7 @@
 	role="grid"
 	tabindex="0"
 >
-	<Pane
-		id={layout.id}
-		Component={layout.Component}
-		props={layout.props}
-		x={layout.x}
-		y={layout.y}
-		width={layout.width}
-		height={layout.height}
-	/>
+	<Pane Component={layout.Component} props={layout.props} />
 	<div bind:this={contextMenuAnchor} class="absolute" style="left:{mouseX}px;top:{mouseY}px;"></div>
 </div>
 

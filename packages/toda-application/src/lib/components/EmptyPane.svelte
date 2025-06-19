@@ -1,12 +1,13 @@
 <script lang="ts" module>
 	import * as m from '$lib/paraglide/messages';
 	import { extensions } from '$lib/stores/extensions.svelte';
+	import type { BasePaneProps } from './Pane.svelte';
 
 	const mountableExtensions = $derived(
 		Object.values(extensions).filter((e) => !!e.config.packageJSON.view)
 	);
 
-	export interface EmptyPaneProps {
+	export interface EmptyPaneProps extends BasePaneProps {
 		onSetExtension(name?: string): void;
 	}
 </script>

@@ -8,22 +8,22 @@
 		y: number;
 		width: number;
 		height: number;
+		side?: Side;
 	}
 
-	export interface PaneProps<Props extends BasePaneProps = BasePaneProps> extends BasePaneProps {
-		id: string;
-		Component: Component<Props, {}, keyof Props>;
+	export interface PaneProps<Props extends BasePaneProps = BasePaneProps> {
+		// biome-ignore lint/complexity/noBannedTypes: empty exports
+		Component: Component<Props, {}, ''>;
 		props: Props;
-		side?: Side;
 	}
 </script>
 
 <script lang="ts">
 	type T = $$Generic<BasePaneProps>;
 
-	let { Component, props, x, y, width, height, id, side }: PaneProps<T> = $props();
+	let { Component, props }: PaneProps<T> = $props();
 </script>
 
-<div class="pane relative flex flex-grow flex-col" data-pane-id={id} data-side={side}>
-	<Component {...props} {id} {x} {y} {width} {height} />
+<div class="pane relative flex flex-grow flex-col" data-pane-id={props.id} data-side={props.side}>
+	<Component {...props} />
 </div>

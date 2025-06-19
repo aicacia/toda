@@ -3,11 +3,9 @@
 	import Pane from './Pane.svelte';
 	import { noop } from '$lib/util';
 
-	export type SplitPaneDirection = 'vertical' | 'horizontal';
-
 	export interface SplitPaneProps extends BasePaneProps {
-		direction?: SplitPaneDirection;
-		splitAt?: number;
+		direction: Direction;
+		splitAt: number;
 		first: PaneProps;
 		second: PaneProps;
 		onsplitatchange?(splitAt: number): void;
@@ -20,6 +18,7 @@
 	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
 	import ArrowUp from 'lucide-svelte/icons/arrow-up';
 	import ArrowDown from 'lucide-svelte/icons/arrow-down';
+	import type { Direction } from '$lib/stores/layouts.svelte';
 
 	let {
 		direction = $bindable('vertical'),
@@ -50,7 +49,7 @@
 		vertical = direction === 'vertical';
 		horizontal = direction === 'horizontal';
 	});
-	let size = $derived(direction === 'vertical' ? width : height);
+	const size = $derived(direction === 'vertical' ? width : height);
 	let firstSize = $state(0);
 	let secondSize = $state(0);
 
@@ -108,12 +107,15 @@
 				: 'inherit'};"
 		>
 			<Pane
-				{...first}
-				{x}
-				{y}
-				width={vertical ? firstSize : width}
-				height={horizontal ? firstSize : height}
-				side="first"
+				Component={first.Component}
+				props={{
+					...first.props,
+					x,
+					y,
+					width: vertical ? firstSize : width,
+					height: horizontal ? firstSize : height,
+					side: 'first'
+				}}
 			/>
 			<div
 				class="join-direction absolute left-0 top-0 hidden h-full w-full items-center justify-center bg-black/25 opacity-25"
@@ -136,12 +138,15 @@
 				: 'inherit'};"
 		>
 			<Pane
-				{...second}
-				x={vertical ? x + firstSize : x}
-				y={horizontal ? y + firstSize : y}
-				width={vertical ? secondSize : width}
-				height={horizontal ? secondSize : height}
-				side="second"
+				Component={second.Component}
+				props={{
+					...second.props,
+					x: vertical ? x + firstSize : x,
+					y: horizontal ? y + firstSize : y,
+					width: vertical ? secondSize : width,
+					height: horizontal ? secondSize : height,
+					side: 'second'
+				}}
 			/>
 			<div
 				class="join-direction absolute left-0 top-0 hidden h-full w-full items-center justify-center bg-black/25 opacity-25"

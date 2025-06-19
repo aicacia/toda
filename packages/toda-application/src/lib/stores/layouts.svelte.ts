@@ -36,11 +36,11 @@ const defaultPaneId = createUniqueId("pane");
 const defaultPane: LayoutExtensionPane = { id: defaultPaneId, type: "extension-pane" };
 const layoutsByName = $state<Layouts>({
   default: {
-    id: defaultPaneId, name: currentLayoutName, panes: { [defaultPaneId]: defaultPane }
+    id: defaultPaneId, name: "default", panes: { [defaultPaneId]: defaultPane }
   }
 });
 
-let currentLayout = $derived(layoutsByName[currentLayoutName]);
+const currentLayout = $derived(layoutsByName[currentLayoutName]);
 
 export const layouts = {
   get byName() {
@@ -56,7 +56,7 @@ export const layouts = {
 
 export function joinCurrentLayout(id: string, side: Side = "first") {
   return updateCurrentLayout(layout => {
-    let pane = layout.panes[id];
+    const pane = layout.panes[id];
     if (pane?.type === "split-pane") {
       const newPaneId = side === "second" ? pane.first : pane.second;
       if (side === "second") {
@@ -88,9 +88,10 @@ export function joinCurrentLayout(id: string, side: Side = "first") {
 
 export function splitCurrentLayout(id: string, x: number, y: number, width: number, height: number, direction: Direction, side: Side = "first") {
   return updateCurrentLayout(layout => {
-    let pane = layout.panes[id];
+    const pane = layout.panes[id];
 
-    let first, second;
+    let first: string;
+    let second: string;
     if (side === "first") {
       first = pane ? clonePane(layout, pane) : createEmptyPane(layout);
       second = createEmptyPane(layout)
@@ -99,7 +100,7 @@ export function splitCurrentLayout(id: string, x: number, y: number, width: numb
       second = pane ? clonePane(layout, pane) : createEmptyPane(layout);
     }
 
-    let newPane: LayoutSplitPane = {
+    const newPane: LayoutSplitPane = {
       id,
       type: "split-pane",
       direction,
@@ -118,12 +119,12 @@ export function splitCurrentLayout(id: string, x: number, y: number, width: numb
 
 export function updateExtension(id: string, extension?: string) {
   return updateCurrentLayout(layout => {
-    let pane = layout.panes[id];
+    const pane = layout.panes[id];
     if (pane?.type === "extension-pane") {
       if (extension) {
         pane.extension = extension;
       } else {
-        delete pane.extension;
+        pane.extension = undefined;
       }
     }
     return layout;
@@ -132,7 +133,7 @@ export function updateExtension(id: string, extension?: string) {
 
 export function updateSplitAt(id: string, splitAt: number) {
   return updateCurrentLayout(layout => {
-    let pane = layout.panes[id];
+    const pane = layout.panes[id];
     if (pane?.type === "split-pane") {
       pane.splitAt = splitAt;
     }
@@ -142,7 +143,7 @@ export function updateSplitAt(id: string, splitAt: number) {
 
 export function updateSize(id: string, width: number, height: number) {
   return updateCurrentLayout(layout => {
-    let pane = layout.panes[id];
+    const pane = layout.panes[id];
     if (pane?.type === "split-pane") {
       pane.width = width;
       pane.height = height;
